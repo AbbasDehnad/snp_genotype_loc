@@ -18,7 +18,7 @@ for file in vcf_files:
         dict_of_chromosoms[chr] = (
             "chr0" + str(index + 1) if int(index + 1) < 10 else "chr" + str(index + 1)
         )
-
+    #TODO check if it is snp
     output = []
     for index, chrom_row in df.iterrows():
         cromosom = dict_of_chromosoms.get(chrom_row["CHROM"])
