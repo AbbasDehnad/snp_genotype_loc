@@ -10,7 +10,8 @@ vcf_files = glob.glob("*.vcf")
 
 for file in vcf_files:
     # read snp chrom location from file
-    df = allel.vcf_to_dataframe(file, fields="*", alt_number=3)
+    df = allel.vcf_to_dataframe(file, fields="*")
+
     callset = allel.read_vcf(file, fields="*", alt_number=3)
     cromosoms = sorted(list(set(callset["variants/CHROM"])))
     dict_of_chromosoms = {}
@@ -18,20 +19,45 @@ for file in vcf_files:
         dict_of_chromosoms[chr] = (
             "chr0" + str(index + 1) if int(index + 1) < 10 else "chr" + str(index + 1)
         )
-    #TODO check if it is snp
-    output = []
+    # TODO check snp are ordered
+    snp_out = []
+    unique_set = set()
+    geno_out = []
     for index, chrom_row in df.iterrows():
         cromosom = dict_of_chromosoms.get(chrom_row["CHROM"])
-        snp = "snp0" + str(index + 1) if int(index + 1) < 10 else "snp" + str(index + 1)
-        output.append(
-            (
-                cromosom,
-                snp,
-                chrom_row["POS"],
+        # GT= chrom_row["GT"]
+        # print(GT)
+        # add snps but dont add duplicates
+        if chrom_row["is_snp"] and (cromosom, chrom_row["POS"]) not in unique_set:
+            snp = (
+                "snp0" + str(index + 1)
+                if int(index + 1) < 10
+                else "snp" + str(index + 1)
             )
-        )
-    with open(file + ".csv", "w") as f:
+
+            snp_out.append(
+                (
+                    snp,
+                    cromosom,
+                    chrom_row["POS"],
+                )
+            )
+            unique_set.add((cromosom, chrom_row["POS"]))
+    with open(file + "snp_loc.csv", "w") as f:
         writer = csv.writer(f)
         writer.writerow(["snp", "chromosome", "position"])
-        for row in output:
+        # sort based on pos
+        for row in list(snp_out).sort(key=lambda x: x[2]):
+            writer.writerow(row)
+
+    with open(file + "geno_loc.csv", "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chr", "position", "GT"])
+        geno_out =zip(
+            [dict_of_chromosoms.get(chr) for chr in callset["variants/CHROM"]],
+            callset["variants/POS"],
+            [1 if str(gt) == "[[ 1 -1]]" else 0 for gt in callset["calldata/GT"]],
+        )
+        for row in geno_out :  # TODO check GT is correct
+
             writer.writerow(row)
