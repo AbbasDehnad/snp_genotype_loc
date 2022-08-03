@@ -65,20 +65,7 @@ for file in vcf_files:
     file_num += 1
 
 # first convert it to 2d table
-list_to_convert = [[0] * (len(vcf_files) + 1) for _ in range(num_of_snps - 1)]
-snps_duplicated=set()
-for row in all_geno:
-    # related snps to this chr,pos
-    snp = row[3]
-    snps = dict_chr_pos_to_snp[row[0]]
-    if len(snps) > 1:
-        [snps_duplicated.add(snp) for snp in snps[1:]]
-    list_to_convert[int(snp[3:]) - 1][0] = snp
-    for snp in snps:
-        col_index = row[2]
-        row_index = int(snp[3:]) - 1
-        list_to_convert[row_index][col_index] = row[1]
-        # print(snps) if len(snps) > 1 else None
+
 
 # sort the locations basd on chr/pos/snp
 all_loc = sorted(all_loc, key=lambda x: (x[1], x[2], int(x[0][3:])))
@@ -89,9 +76,21 @@ with open("snp_loc.csv", "w", newline="") as f:
     for row in all_loc:
         writer.writerow(row)
 
+dict_snp_to_index= {snp: index for index, snp in enumerate([l[0] for l in all_loc])}      
+list_to_convert = [[0] * (len(vcf_files) + 1) for _ in range(num_of_snps - 1)]
+for row in all_geno:
+    # related snps to this chr,pos
+    snp = row[3]
+    snps = dict_chr_pos_to_snp[row[0]]
+    list_to_convert[int(snp[3:]) - 1][0] = snp
+    for snp in snps:
+        col_index = row[2]
+        row_index = int(snp[3:]) - 1
+        list_to_convert[row_index][col_index] = row[1]
+        # print(snps) if len(snps) > 1 else None
+list_to_convert = sorted(list_to_convert, key=lambda x: dict_snp_to_index[x[0]])
 with open("geno_loc.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["SNP", *vcf_files])
-    for row in list_to_convert:  # TODO check GT is correct
-        if row[0] not in snps_duplicated:
+    for row in list_to_convert: 
             writer.writerow(row)
