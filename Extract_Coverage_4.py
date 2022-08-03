@@ -66,10 +66,13 @@ for file in vcf_files:
 
 # first convert it to 2d table
 list_to_convert = [[0] * (len(vcf_files) + 1) for _ in range(num_of_snps - 1)]
+snps_duplicated=set()
 for row in all_geno:
     # related snps to this chr,pos
     snp = row[3]
     snps = dict_chr_pos_to_snp[row[0]]
+    if len(snps) > 1:
+        [snps_duplicated.add(snp) for snp in snps[1:]]
     list_to_convert[int(snp[3:]) - 1][0] = snp
     for snp in snps:
         col_index = row[2]
@@ -90,4 +93,5 @@ with open("geno_loc.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["SNP", *vcf_files])
     for row in list_to_convert:  # TODO check GT is correct
-        writer.writerow(row)
+        if row[0] not in snps_duplicated:
+            writer.writerow(row)
