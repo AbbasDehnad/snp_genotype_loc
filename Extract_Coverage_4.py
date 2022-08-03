@@ -49,12 +49,18 @@ for file in vcf_files:
         #  add snps but dont add duplicates
         if (cromosom, chrom_row["POS"]) not in unique_set:
 
-            geno_out_1.append(((cromosom, chrom_row["POS"]), 1 if GT[index][0][0] == 1 else 0, file_num,snp))
+            geno_out_1.append(
+                (
+                    (cromosom, chrom_row["POS"]),
+                    1 if GT[index][0][0] == 1 else 0,
+                    file_num,
+                    snp,
+                )
+            )
             snp_out.append((snp, cromosom, chrom_row["POS"]))
         unique_set.add((cromosom, chrom_row["POS"]))
 
     all_loc.extend(snp_out)
-    # all_geno.extend(sorted(list(geno_out), key=lambda x: (x[0], x[1])))
     all_geno.extend(sorted(list(geno_out_1)))
     file_num += 1
 
@@ -62,23 +68,25 @@ for file in vcf_files:
 list_to_convert = [[0] * (len(vcf_files) + 1) for _ in range(num_of_snps - 1)]
 for row in all_geno:
     # related snps to this chr,pos
+    snp = row[3]
     snps = dict_chr_pos_to_snp[row[0]]
-    list_to_convert[int(snp[3:]) - 1][3] = snp
+    list_to_convert[int(snp[3:]) - 1][0] = snp
     for snp in snps:
         col_index = row[2]
         row_index = int(snp[3:]) - 1
         list_to_convert[row_index][col_index] = row[1]
+        # print(snps) if len(snps) > 1 else None
 
 # sort the locations basd on chr/pos/snp
-all_loc = sorted(all_loc, key=lambda x: (x[1], x[2], x[0]))
-with open("snp_location.csv", "w", newline="") as f:
+all_loc = sorted(all_loc, key=lambda x: (x[1], x[2], int(x[0][3:])))
+with open("snp_loc.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["snp", "Chromosome", "position"])
     # sort based on pos
     for row in all_loc:
         writer.writerow(row)
 
-with open("geno_location.csv", "w", newline="") as f:
+with open("geno_loc.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["SNP", *vcf_files])
     for row in list_to_convert:  # TODO check GT is correct
