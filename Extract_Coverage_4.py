@@ -34,7 +34,7 @@ for file in vcf_files:
     df = allel.vcf_to_dataframe(file, fields="*")
     callset = allel.read_vcf(file, fields="*", alt_number=3)
     GT = callset["calldata/GT"]
-    unique_set: set[str, str] = set()
+    unique_set = set()
     snp_out = []
     geno_out = []
     geno_out_1 = []
@@ -69,7 +69,7 @@ for file in vcf_files:
 
 # sort the locations basd on chr/pos/snp
 all_loc = sorted(all_loc, key=lambda x: (x[1], x[2], int(x[0][3:])))
-counter_loc=1
+counter_loc = 1
 with open("snp_loc.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["snp", "Chromosome", "position"])
@@ -78,7 +78,7 @@ with open("snp_loc.csv", "w", newline="") as f:
         writer.writerow(["snp" + str(counter_loc), row[1], row[2]])
         counter_loc += 1
 
-dict_snp_to_index= {snp: index for index, snp in enumerate([l[0] for l in all_loc])}      
+dict_snp_to_index = {snp: index for index, snp in enumerate([l[0] for l in all_loc])}
 list_to_convert = [[0] * (len(vcf_files) + 1) for _ in range(num_of_snps - 1)]
 for row in all_geno:
     # related snps to this chr,pos
@@ -90,12 +90,12 @@ for row in all_geno:
         row_index = int(snp[3:]) - 1
         list_to_convert[row_index][col_index] = row[1]
 
-    
-counter=1
+
+counter = 1
 list_to_convert = sorted(list_to_convert, key=lambda x: dict_snp_to_index[x[0]])
 with open("geno_loc.csv", "w", newline="") as f:
     writer = csv.writer(f)
     writer.writerow(["SNP", *vcf_files])
-    for row in list_to_convert: 
-        writer.writerow(["snp"+str(counter), *row[1:]])
+    for row in list_to_convert:
+        writer.writerow(["snp" + str(counter), *row[1:]])
         counter += 1
