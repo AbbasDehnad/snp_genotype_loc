@@ -3,6 +3,7 @@
 from collections import defaultdict
 import csv
 from email.policy import default
+import os
 from random import sample
 import allel
 import glob
@@ -10,6 +11,7 @@ import glob
 from pandas import DataFrame
 
 vcf_files = glob.glob("*.vcf")
+vcf_files= list(map(os.path.basename, vcf_files))
 # read positionsFile
 all_loc = []
 all_geno = []
