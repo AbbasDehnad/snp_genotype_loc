@@ -13,7 +13,7 @@ patern1 = "DBxref.*;\sID"
 patern2 = 'Ontology_term.*]";'
 pattern_mt = "mtDNA.*;"
 pattern_not_mt = "^[^mt].*"
-note_pattern = '; note[A-Z :()\-0-9"]*'
+note_pattern = 'note .*original'
 
 for file in gf_files:
     with open(file, "r") as f:
@@ -30,7 +30,7 @@ for file in gf_files:
         )
         content_new = re.sub(
             pattern=note_pattern,
-            repl="",
+            repl="original",
             string=content_new,
         )
         content_non_mt = re.sub(
