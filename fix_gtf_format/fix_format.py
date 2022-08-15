@@ -14,7 +14,7 @@ patern2 = 'Ontology_term.*]";'
 pattern_mt = "mtDNA.*;"
 pattern_not_mt = "^[^mt].*"
 note_pattern = 'note .*original'
-product_pattern = '" " .*;'
+product_pattern = '" "'
 chr1="CP031385.1"
 chr2="CP031386.1"
 chr3="CP031387.1"
@@ -45,7 +45,7 @@ for file in gf_files:
         )
         content_new = re.sub(
             pattern=product_pattern,
-            repl='";',
+            repl=' ',
             string=content_new,
         )
         content_new = re.sub(
